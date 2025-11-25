@@ -1,46 +1,384 @@
-import productsData from "../mockData/products.json";
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import { getApperClient } from "@/services/apperClient";
 
 const productService = {
   getAll: async () => {
-    await delay(300);
-    return [...productsData];
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return [];
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ]
+      };
+
+      const response = await apperClient.fetchRecords('product_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      if (!response?.data?.length) {
+        return [];
+      }
+
+      // Transform database field names to UI format
+      return response.data.map(product => ({
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      }));
+    } catch (error) {
+      console.error("Error fetching products:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
   getById: async (id) => {
-    await delay(200);
-    const product = productsData.find((p) => p.Id === parseInt(id));
-    if (!product) {
-      throw new Error("Product not found");
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return null;
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ]
+      };
+
+      const response = await apperClient.getRecordById('product_c', parseInt(id), params);
+
+      if (!response?.data) {
+        throw new Error("Product not found");
+      }
+
+      const product = response.data;
+      return {
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      };
+    } catch (error) {
+      console.error(`Error fetching product ${id}:`, error?.response?.data?.message || error);
+      return null;
     }
-    return { ...product };
   },
 
   getByCategory: async (category) => {
-    await delay(300);
-    return productsData.filter((p) => p.category === category);
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return [];
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ],
+        where: [{
+          "FieldName": "category_c",
+          "Operator": "EqualTo",
+          "Values": [category]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords('product_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      if (!response?.data?.length) {
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      }));
+    } catch (error) {
+      console.error("Error fetching products by category:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
   getFeatured: async () => {
-    await delay(300);
-    return productsData.filter((p) => p.featured);
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return [];
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ],
+        where: [{
+          "FieldName": "featured_c",
+          "Operator": "EqualTo",
+          "Values": [true]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords('product_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      if (!response?.data?.length) {
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      }));
+    } catch (error) {
+      console.error("Error fetching featured products:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
   getTrending: async () => {
-    await delay(300);
-    return productsData.filter((p) => p.trending);
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return [];
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ],
+        where: [{
+          "FieldName": "trending_c",
+          "Operator": "EqualTo",
+          "Values": [true]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords('product_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      if (!response?.data?.length) {
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      }));
+    } catch (error) {
+      console.error("Error fetching trending products:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
   search: async (query) => {
-    await delay(300);
-    const lowerQuery = query.toLowerCase();
-    return productsData.filter(
-      (p) =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.category.toLowerCase().includes(lowerQuery) ||
-        p.description.toLowerCase().includes(lowerQuery)
-    );
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        console.error("ApperClient not available");
+        return [];
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "price_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "subcategory_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "sizes_c"}},
+          {"field": {"Name": "colors_c"}},
+          {"field": {"Name": "inStock_c"}},
+          {"field": {"Name": "stockCount_c"}},
+          {"field": {"Name": "featured_c"}},
+          {"field": {"Name": "trending_c"}}
+        ],
+        whereGroups: [{
+          "operator": "OR",
+          "subGroups": [
+            {"conditions": [{
+              "fieldName": "Name",
+              "operator": "Contains",
+              "values": [query]
+            }], "operator": ""},
+            {"conditions": [{
+              "fieldName": "category_c",
+              "operator": "Contains",
+              "values": [query]
+            }], "operator": ""},
+            {"conditions": [{
+              "fieldName": "description_c",
+              "operator": "Contains",
+              "values": [query]
+            }], "operator": ""}
+          ]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords('product_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      if (!response?.data?.length) {
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        name: product.Name,
+        description: product.description_c,
+        price: parseFloat(product.price_c || 0),
+        category: product.category_c,
+        subcategory: product.subcategory_c,
+        images: product.images_c ? product.images_c.split('\n').filter(img => img.trim()) : [],
+        sizes: product.sizes_c ? product.sizes_c.split('\n').filter(size => size.trim()) : [],
+        colors: product.colors_c ? product.colors_c.split('\n').filter(color => color.trim()) : [],
+        inStock: product.inStock_c || false,
+        stockCount: parseInt(product.stockCount_c || 0),
+        featured: product.featured_c || false,
+        trending: product.trending_c || false
+      }));
+    } catch (error) {
+      console.error("Error searching products:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 };
 

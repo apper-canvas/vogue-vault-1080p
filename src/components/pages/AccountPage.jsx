@@ -49,7 +49,7 @@ const AccountPage = () => {
             My Account
           </h1>
           <p className="text-primary/60">
-            Welcome back, {user?.firstName || "Valued Customer"}!
+Welcome back, {user?.firstName || user?.emailAddress || "Valued Customer"}!
           </p>
         </div>
 
@@ -133,12 +133,12 @@ const AccountPage = () => {
                 <div>
                   <p className="text-sm">Name</p>
                   <p className="font-medium text-primary">
-                    {user?.firstName} {user?.lastName}
+{user?.firstName || user?.emailAddress}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm">Email</p>
-                  <p className="font-medium text-primary">{user?.email}</p>
+<p className="text-sm">Email</p>
+                  <p className="font-medium text-primary">{user?.emailAddress}</p>
                 </div>
                 {user?.phone && (
                   <div>
