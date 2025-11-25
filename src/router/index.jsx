@@ -12,7 +12,7 @@ const CartPage = lazy(() => import("@/components/pages/CartPage"));
 const CheckoutPage = lazy(() => import("@/components/pages/CheckoutPage"));
 const WishlistPage = lazy(() => import("@/components/pages/WishlistPage"));
 const LoginPage = lazy(() => import("@/components/pages/LoginPage"));
-const SignupPage = lazy(() => import("@/components/pages/SignupPage"));
+const Signup = lazy(() => import("@/components/pages/Signup"));
 const RegisterPage = lazy(() => import("@/components/pages/RegisterPage"));
 const AccountPage = lazy(() => import("@/components/pages/AccountPage"));
 const OrderHistoryPage = lazy(() => import("@/components/pages/OrderHistoryPage"));
@@ -102,8 +102,8 @@ const mainRoutes = [
     element: <LoginPage />
   }),
   createRoute({
-    path: "signup",
-    element: <SignupPage />
+path: "signup",
+    element: <Signup />
   }),
   createRoute({
     path: "register",
